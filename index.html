@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferma – Ambient Intelligence for BD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1b26 0%, #1e293b 50%, #0f172a 100%);
+            color: #e2e8f0;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100vw;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+        }
+
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(26, 27, 38, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: 60px;
+            min-height: 60px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 28px;
+            background: linear-gradient(90deg, #818cf8 0%, #38bdf8 50%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            margin: 0;
+            letter-spacing: -0.03em;
+            text-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-btn {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 500;
+            background: rgba(26, 27, 38, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+
+        .control-btn:hover {
+            background: rgba(26, 27, 38, 0.8);
+            color: #f8fafc;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .control-btn i {
+            font-size: 16px;
+        }
+
+        .control-btn.active {
+            background: rgba(129, 140, 248, 0.2);
+            border-color: rgba(129, 140, 248, 0.3);
+            color: #818cf8;
+        }
+
+        .control-btn.active:hover {
+            background: rgba(129, 140, 248, 0.3);
+            border-color: rgba(129, 140, 248, 0.4);
+        }
+
+        .control-btn.active i {
+            color: #818cf8;
+        }
+
+        /* Hide prev/next buttons as they are no longer needed */
+        #prev-btn, #next-btn {
+            display: none;
+        }
+
+        /* Hide step counter but show speed control */
+        .step-indicator {
+            display: none;
+        }
+
+        .speed-control {
+            color: #94a3b8;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .speed-slider {
+            width: 100px;
+            accent-color: #818cf8;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            background: #818cf8;
+        }
+
+        .speed-slider::-moz-range-thumb {
+            background: #818cf8;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 60px);
+            min-height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        .environment-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+            min-height: 600px; /* Minimum height for smaller screens */
+            overflow: hidden;
+        }
+
+        .environment-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            min-height: 600px; /* Minimum height for smaller screens */
+        }
+
+        .environment-column:first-child {
+            display: grid;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .environment-column:last-child {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .section {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            background: rgba(26, 27, 38, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            background: rgba(26, 27, 38, 0.5);
+            box-shadow: 0 8px 32px -1px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .section-title {
+            margin: 0 0 10px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #f1f5f9;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            font-size: 16px;
+            opacity: 0.8;
+            color: #94a3b8;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            min-height: 0;
+            color: #cbd5e1;
+        }
+
+        .actions-container {
+            height: 100%;
+            min-height: 600px; /* Minimum height for smaller screens */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .actions-container .section {
+            flex: 1;
+            min-height: 0; /* Important for nested flex containers */
+        }
+
+        /* Scrollbar styling */
+        .content-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content-area::-webkit-scrollbar-track {
+            background: #0d0d0d;
+        }
+
+        .content-area::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .content-area::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Override for panels that embed PDFs so there's no extra green padding */
+        .pdf-frame {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: none;
+        }
+        
+        /* NEW: Dedicated styles for panels that embed PDFs */
+        .section.pdf-panel {
+            padding: 10px;
+        }
+
+        .section.pdf-panel .content-area {
+            margin: 0;
+            padding: 0;
+            background: none;
+            flex-grow: 1;
+            height: 100%;
+            display: block;
+        }
+
+        .section.pdf-panel .content-area iframe,
+        .section.pdf-panel .content-area video {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* cleaned: removed unused plan-list styles */
+
+        /* Removed explicit grid-row placements; natural order within flex columns now handles layout */
+
+        #action-list {
+            overflow-y: auto;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: #ffffff;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Make the two right-hand panels fill their column height evenly */
+        .environment-grid .column:nth-of-type(2) {
+            height: 100%;
+        }
+
+        .environment-grid .column:nth-of-type(2) .section {
+            flex: 0 0 auto; /* let height wrap content, no stretching */
+        }
+
+        /* Remove highlight background if panel currently has no content */
+        .content-area:empty {
+            background: none;
+            display: none;
+            height: 0;
+        }
+
+        /* Static highlight for active panel */
+        .section.active-panel {
+            background: rgba(16, 185, 129, 0.05);
+            box-shadow: 0 8px 32px -1px rgba(0, 0, 0, 0.3),
+                       inset 0 0 20px rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .section.active-panel .section-title {
+            color: #10b981;
+        }
+
+        .section.active-panel .section-title i {
+            color: #10b981;
+            opacity: 1;
+        }
+
+        .asset { 
+            color: #818cf8; 
+        }
+
+        .video-frame {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border: none;
+            background: #000;
+        }
+
+        .others { 
+            color: #94a3b8; 
+        }
+
+        .hidden { display:none; }
+        @keyframes slide-up { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+        .slide-up { animation: slide-up 0.4s ease-out; }
+        .fade { animation: fadeCycle 0.6s ease-in-out; }
+        @keyframes fadeCycle { 0% { opacity:1; } 50% { opacity:0; } 100% { opacity:1; } }
+
+        /* Inserted LIVE indicator styles */
+        .active-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #10b981;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #f8fafc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: glow 1.6s ease-in-out infinite alternate;
+        }
+
+        .active-dot {
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 3px #10b981; }
+            to   { box-shadow: 0 0 10px #10b981; }
+        }
+
+        /* Settings panel (hidden by default) */
+        .settings-panel {
+            display: none;
+            gap: 8px;
+            align-items: center;
+            padding: 4px;
+        }
+
+        /* Paragraph spacing inside the Actions content area */
+        #action-list p {
+            margin: 6px 0 10px;
+            line-height: 1.4;
+        }
+
+        /* Action exit animation */
+        @keyframes action-exit {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(-20px); }
+        }
+        .action-exit {
+            animation: action-exit 0.4s ease-out forwards;
+        }
+
+        /* simple circular loader */
+        .loader {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(16, 185, 129, 0.3);
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 32px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg);} }
+
+        /* Action item separator */
+        .action-item + .action-item {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        @keyframes slide-down { from { transform: translateY(-20px); opacity:0;} to { transform: translateY(0); opacity:1;} }
+        .slide-down { animation: slide-down 0.4s ease-out; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-wrapper">
+            <h1 class="title">Ferma – Ambient Intelligence for BD</h1>
+            <div class="controls">
+                <div id="active-indicator" class="active-indicator" onclick="toggleSettings()">
+                    <span class="active-dot"></span> ACTIVE
+                </div>
+                <div id="settings-panel" class="settings-panel">
+                    <button id="play-pause-btn" class="control-btn active"><i class="ph ph-pause"></i></button>
+                    <button id="loop-btn" class="control-btn active"><i class="ph ph-repeat"></i></button>
+                    <button id="reset-btn" class="control-btn"><i class="ph ph-arrow-counter-clockwise"></i></button>
+                    <div class="speed-control">
+                        <i class="ph ph-gauge"></i>
+                        <input type="range" min="1" max="10" value="5" class="speed-slider" id="speed-slider">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-layout">
+            <div class="environment-container">
+                <div class="environment-column">
+                    <div id="objective" class="section">
+                        <h2 class="section-title"><i class="ph ph-target"></i>OBJECTIVE</h2>
+                        <div id="objective-content" class="content-area"></div>
+                    </div>
+                    <div id="plan" class="section">
+                        <h2 class="section-title"><i class="ph ph-list-checks"></i>PLAN</h2>
+                        <div id="plan-list" class="content-area"></div>
+                    </div>
+                    <div id="reasoning-section" class="section">
+                        <h2 class="section-title"><i class="ph ph-brain"></i>REASONING</h2>
+                        <div id="reasoning-content" class="content-area"></div>
+                    </div>
+                </div>
+                
+                <div class="environment-column">
+                    <div id="input-feed" class="section">
+                        <h2 class="section-title"><i class="ph ph-rss"></i>INPUT FEED</h2>
+                        <div id="input-content" class="content-area"></div>
+                    </div>
+                    <div id="enrichment" class="section">
+                        <h2 class="section-title"><i class="ph ph-stack"></i>ENRICHMENT</h2>
+                        <div id="enrichment-content" class="content-area"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="actions-container">
+                <div class="section">
+                    <h2 class="section-title"><i class="ph ph-lightning"></i>ACTIONS</h2>
+                    <div id="action-list" class="content-area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const simulationSteps = [
+    {
+      "step": 7,
+      "content": {
+        "Objective": "Identify & evaluate potential partners developing early-stage BTK therapies in heme-onc with positive clinical outcomes. Please keep me updated on significant developments.",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Early_Stage_BTK_Assets.pdf"
+          }
+        ],
+        "InputFeed": {
+          "url": "https://vm1689.github.io/bio25/JHC.mp4"
+        },
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (Jefferies 2025)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Reasoning": "BTK asset list has been successfully updated. Now I will continue monitoring NX-5948 & other drugs.",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+        ],
+        "Action": "<p><strong>NX-5948 Partnership Assessment (Post&nbsp;Jefferies&nbsp;2025)</strong></p><p><em>Flash&nbsp;Note:</em> <span class=\"asset\">NX-5948</span> emerges as a differentiated BTK degrader with positive Phase&nbsp;1 data in BTKi-exposed patients; its unique WM positioning and the upcoming EHA25 update may present partnership opportunities.</p><p><strong>Asset Overview:</strong> NX-5948 (bexobrutideg) is a BTK degrader operating at 500–1000× lower doses than inhibitors, offering a broader therapeutic window and better safety profile.</p><p><strong>Clinical Excellence:</strong> Phase&nbsp;1b wAIHA cohort added with mature EHA25 update expected. CLL pivotal study is on track for 2025, and an I&I IND is planned by year-end. According to Nurix, both 200 mg and 600 mg doses look similar in efficacy/safety profile in BTKi-exposed patients.</p><p><strong>Strategic Positioning:</strong> Mid-2025 update will incorporate FDA feedback on study design and dose. A single-arm Phase 2 (post-BTKi/BCL2i) is planned for 2025 aiming for accelerated approval; a global RCT update is slated for Q3 2025.</p><p><strong>Value Drivers:</strong> Orphan Drug Designation in WM (Mar 2025); Phase&nbsp;1a mature data at EHA25; mid-2025 development update with FDA feedback; Phase 2 initiation (2025); autoimmune IND filing (late 2025).</p><p><strong>Conclusion:</strong> NX-5948 represents a differentiated BTK degrader with unique WM positioning, creating partnership opportunities as pivotal development advances.</p>"
+      }
+    },
+    {
+      "step": 8,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (Press Release)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "InputFeed": {
+          "url": "https://vm1689.github.io/bio25/Nurix_EHA_2025_Clinical_Data_Update_Webcast_Announcement_PR.pdf"
+        }
+      }
+    },
+    {
+      "step": 9,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (Press Release)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Reasoning": "I've identified a significant NX-5948 update: According to the official press release, Nurix is hosting a webcast conference call at 8:00 a.m., ET, on Thursday, June 12, 2025, to discuss new data from the ongoing Phase 1 clinical trial of NX-5948 to be presented at EHA2025. I'm highlighting this for immediate review and follow-up."
+      }
+    },
+    {
+      "step": 10,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (Press Release)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Action": "Email: Nurix Therapeutics is hosting a webcast to discuss Phase 1 trial data at EHA 2025 on June 12, 8AM EDT. Click here to add it to your calendar."
+      }
+    },
+    {
+      "step": 11,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (Press Release)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Reasoning": "I need to monitor Nurix's June 12 EHA2025 clinical readout for NX-5948 Phase 1 efficacy and safety data to update my partnership assessment, as these metrics will directly influence deal structure and strategic value."
+      }
+    },
+    {
+      "step": 12,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (Press Release)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+          {"task_id": "003", "task": "Cover EHA25 webinar – Jun 12 2025 @ 8 AM EDT", "checked": false}
+        ]
+      }
+    },
+    {
+      "step": 13,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "InputFeed": {
+          "url": "https://vm1689.github.io/bio25/Nurix_EHA_2025_Clinical_Data_Update_Presentation.mp4"
+        }
+      }
+    },
+    {
+      "step": 14,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Reasoning": "I've secured the direct webcast link for Nurix's NX-5948 Phase 1 data presentation and must establish it as an automated input feed for real-time data capture during the live clinical readout."
+      }
+    },
+    {
+      "step": 15,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Reasoning": "I analyzed the EHA 2025 webcast: NX-5948 achieved 80.9% ORR in CLL and 84.2% ORR in WM with favorable safety in heavily pretreated patients. The BTK degrader showed rapid, durable responses, earned Fast Track/PRIME designations, has pivotal trials planned for 2025, and positions as potential best-in-class therapy.\n\nNow I need comprehensive due diligence to assess partnership viability: competitive differentiation, market opportunity, partnership landscape, sponsor financials, value inflection points, and synthesis into an actionable evaluation."
+      }
+    },
+    {
+      "step": 16,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Knowledge Graph)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+          {"task_id": "003", "task": "Cover EHA25 webinar – Jun 12 2025 @ 8 AM EDT", "checked": true},
+          {"task_id": "004", "task": "Investigate what makes NX-5948 different", "checked": false},
+          {"task_id": "005", "task": "Quantify market size and opportunity for BTK therapies", "checked": false},
+          {"task_id": "006", "task": "Evaluate NX-5948's partnership status", "checked": false},
+          {"task_id": "007", "task": "Monitor Nurix's financial health", "checked": false},
+          {"task_id": "008", "task": "Track NX-5948's catalysts and regulatory milestones", "checked": false},
+          {"task_id": "009", "task": "Create a partnership assessment report for NX-5948", "checked": false}
+        ]
+      }
+    },
+    {
+      "step": 17,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (EHA 2025 Presentation)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_EHA_2025_Investor_Presentation.pdf#page=6",
+            "pages": [9]
+          }
+        ]
+      }
+    },
+    {
+      "step": 18,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Investor Presentation)",
+        "Reasoning": "Nurix's EHA2025 presentation positions NX-5948 as a differentiated BTK degrader that overcomes resistance mutations, addresses scaffolding functions, shows clinical activity in difficult-to-treat B-cell malignancies, and has potential in autoimmune disorders."
+      }
+    },
+    {
+      "step": 19,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Investor Presentation)",
+        "Reasoning": "I must quantify the BTK therapy market size across hematology-oncology and autoimmune indications to assess commercial opportunity and validate partnership potential."
+      }
+    },
+    {
+      "step": 20,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Investor Presentation)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+          {"task_id": "003", "task": "Cover EHA25 webinar – Jun 12 2025 @ 8 AM EDT", "checked": true},
+          {"task_id": "004", "task": "Investigate what makes NX-5948 different", "checked": true},
+          {"task_id": "005", "task": "Quantify market size and opportunity for BTK therapies", "checked": false},
+          {"task_id": "006", "task": "Evaluate NX-5948's partnership status", "checked": false},
+          {"task_id": "007", "task": "Monitor Nurix's financial health", "checked": false},
+          {"task_id": "008", "task": "Track NX-5948's catalysts and regulatory milestones", "checked": false},
+          {"task_id": "009", "task": "Create a partnership assessment report for NX-5948", "checked": false}
+        ]
+      }
+    },
+    {
+      "step": 21,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Corporate Presentation)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_June_2025_Corporate_Presentation.pdf#page=8",
+            "pages": [8]
+          }
+        ]
+      }
+    },
+    {
+      "step": 22,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Investor Presentation)",
+        "Reasoning": "I couldn't find heme-onc specific BTK market data, but Nurix's June 2025 presentation shows BTK inhibitors exceeded $10 billion in 2024 with consistent growth as next-generation therapies capture share from Imbruvica. Their strategy to displace inhibitors in oncology and expand degraders into I&I confirms substantial partnership opportunity."
+      }
+    },
+    {
+      "step": 23,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Corporate Presentation)",
+        "Reasoning": "With the $10+ billion BTK market validated and growing displacement opportunity confirmed, I need to assess NX-5948's current partnership landscape to determine if Nurix has existing collaborations or remains open to strategic partners for this differentiated BTK degrader asset."
+      }
+    },
+    {
+      "step": 24,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Corporate Presentation)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+          {"task_id": "003", "task": "Cover EHA25 webinar – Jun 12 2025 @ 8 AM EDT", "checked": true},
+          {"task_id": "004", "task": "Investigate what makes NX-5948 different", "checked": true},
+          {"task_id": "005", "task": "Quantify market size and opportunity for BTK therapies", "checked": true},
+          {"task_id": "006", "task": "Evaluate NX-5948's partnership status", "checked": false},
+          {"task_id": "007", "task": "Monitor Nurix's financial health", "checked": false},
+          {"task_id": "008", "task": "Track NX-5948's catalysts and regulatory milestones", "checked": false},
+          {"task_id": "009", "task": "Create a partnership assessment report for NX-5948", "checked": false}
+        ]
+      }
+    },
+    {
+      "step": 25,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Corporate Presentation)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_June_2025_Corporate_Presentation.pdf#page=7",
+            "pages": [7]
+          }
+        ]
+      }
+    },
+    {
+      "step": 26,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Corporate Presentation)",
+        "Reasoning": "Nurix's June presentation shows NX-5948 is fully proprietary unlike other pipeline assets partnered with Gilead/Sanofi/Pfizer, while Q1 2025 earnings reveal they hired John Northcott as CCO with ibrutinib commercialization experience, indicating preparation for independent commercialization as they launch pivotal CLL programs."
+      }
+    },
+    {
+      "step": 27,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Q1 2025 Earnings Call)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_Q1_2025_Earnings_Call.pdf#page=2",
+            "pages": [2]
+          }
+        ]
+      }
+    },
+    {
+      "step": 28,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Q1 2025 Earnings Call)",
+        "Reasoning": "With NX-5948's proprietary status confirmed, I must assess Nurix's financial health to evaluate their funding capacity for pivotal trials and determine partnership urgency. Key metrics include cash position, burn rate, runway duration, and R&D spending trajectory, as financial constraints could create partnership opportunities while strong funding may indicate less deal-making urgency."
+      }
+    },
+    {
+      "step": 29,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Q1 2025 Earnings Call)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+          {"task_id": "003", "task": "Cover EHA25 webinar – Jun 12 2025 @ 8 AM EDT", "checked": true},
+          {"task_id": "004", "task": "Investigate what makes NX-5948 different", "checked": true},
+          {"task_id": "005", "task": "Quantify market size and opportunity for BTK therapies", "checked": true},
+          {"task_id": "006", "task": "Evaluate NX-5948's partnership status", "checked": true},
+          {"task_id": "007", "task": "Monitor Nurix's financial health", "checked": false},
+          {"task_id": "008", "task": "Track NX-5948's catalysts and regulatory milestones", "checked": false},
+          {"task_id": "009", "task": "Create a partnership assessment report for NX-5948", "checked": false}
+        ]
+      }
+    },
+    {
+      "step": 30,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Q1 2025 Earnings Call)",
+        "Reasoning": "From June presentation showing $549.7M cash with runway into H1 2027, and Q1 2025 earnings showing R&D expenses rising to $69.7M (from $50M) specifically for NX-5948 enrollment and pivotal trials, Nurix appears well-funded but faces increasing development costs."
+      }
+    },
+    {
+      "step": 31,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Jun 2025 Corporate Presentation)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_June_2025_Corporate_Presentation.pdf#page=30",
+            "pages": [30]
+          }
+        ]
+      }
+    },
+    {
+      "step": 32,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (2024 Annual Report)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_2024_Annual_Report.pdf#page=118",
+            "pages": [118]
+          }
+        ]
+      }
+    },
+    {
+      "step": 33,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (2024 Annual Report)",
+        "Reasoning": "With Nurix's financial stability confirmed through H1 2027 and $549.7M cash position, I must identify upcoming clinical milestones and regulatory catalysts for NX-5948 to pinpoint optimal partnership timing and value inflection points for proactive strategic positioning ahead of events that could significantly impact deal terms."
+      }
+    },
+    {
+      "step": 34,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (2024 Annual Report)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+          {"task_id": "003", "task": "Cover EHA25 webinar – Jun 12 2025 @ 8 AM EDT", "checked": true},
+          {"task_id": "004", "task": "Investigate what makes NX-5948 different", "checked": true},
+          {"task_id": "005", "task": "Quantify market size and opportunity for BTK therapies", "checked": true},
+          {"task_id": "006", "task": "Evaluate NX-5948's partnership status", "checked": true},
+          {"task_id": "007", "task": "Monitor Nurix's financial health", "checked": true},
+          {"task_id": "008", "task": "Track NX-5948's catalysts and regulatory milestones", "checked": false},
+          {"task_id": "009", "task": "Create a partnership assessment report for NX-5948", "checked": false}
+        ]
+      }
+    },
+    {
+      "step": 35,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (2024 Annual Report)",
+        "Reasoning": "From Q1 2025 earnings and press releases, I identified multiple NX-5948 catalysts: clinical data at 18-ICML (June 17-21, 2025), global registration trials commencing in 2025 for CLL approval, expansion into autoimmune/inflammatory diseases, new Phase 1b cohort for CLL with autoimmune hemolytic anemia, non-malignant hematology IND for autoimmune cytopenias, and clinical updates throughout 2025, creating multiple partnership value inflection points."
+      }
+    },
+    {
+      "step": 36,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Q1 2025 Earnings Call)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_Q1_2025_Earnings_Call.pdf#page=2",
+            "pages": [2]
+          }
+        ]
+      }
+    },
+    {
+      "step": 37,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Press Release)",
+        "Enrichment": [
+          {
+            "url": "https://vm1689.github.io/bio25/Nurix_ICML_Presentation_PR.pdf",
+            "pages": [2]
+          }
+        ]
+      }
+    },
+    {
+      "step": 37,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Press Release)",
+        "Reasoning": "With comprehensive NX-5948 intelligence gathered through market analysis, clinical evaluation, competitive differentiation, financial review, partnership status, and regulatory milestones, I must synthesize these findings into a strategic partnership assessment report providing actionable insights for executive decision-making and deal evaluation."
+      }
+    },
+    {
+      "step": 38,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Press Release)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+          {"task_id": "003", "task": "Cover EHA25 webinar – Jun 12 2025 @ 8 AM EDT", "checked": true},
+          {"task_id": "004", "task": "Investigate what makes NX-5948 different", "checked": true},
+          {"task_id": "005", "task": "Quantify market size and opportunity for BTK therapies", "checked": true},
+          {"task_id": "006", "task": "Evaluate NX-5948's partnership status", "checked": true},
+          {"task_id": "007", "task": "Monitor Nurix's financial health", "checked": true},
+          {"task_id": "008", "task": "Track NX-5948's catalysts and regulatory milestones", "checked": true},
+          {"task_id": "009", "task": "Create a partnership assessment report for NX-5948", "checked": false}
+        ]
+      }
+    },
+    {
+      "step": 39,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Press Release)",
+        "Action": "<p><strong>NX-5948 Partnership Assessment (Post-EHA25)</strong></p><p><em>Flash&nbsp;Note:</em> Nurix's <span class=\"asset\">NX-5948</span> is a best-in-class BTK degrader with strong EHA&nbsp;2025 data in CLL/WM, regulatory tailwinds, and a $549.7&nbsp;M cash position—well positioned for partnership ahead of global scale-up.</p><p><strong>Asset Overview:</strong> NX-5948 is a proprietary BTK degrader addressing treatment-emergent resistance in the $10&nbsp;B+ BTK inhibitor market.</p><p><strong>Clinical Excellence:</strong> CLL achieved 80.9% ORR with one CR and 1.87&nbsp;months to response. WM showed 84.2% ORR with two VGPRs. Durable responses observed in high-risk mutations (BTK, PLCG2, BCL2, MYD88, CXCR4) including CNS involvement. No atrial fibrillation or Grade&nbsp;5 events.</p><p><strong>Strategic Positioning:</strong> Nurix holds $549.7&nbsp;M cash (runway into mid-2027). CCO John Northcott's appointment signals go-alone intent. FY2024 losses of $193.6&nbsp;M and rising Phase&nbsp;3 costs create partnership pressure.</p><p><strong>Value Drivers:</strong> FDA Fast Track (CLL/WM), Orphan (WM), EMA PRIME (CLL); pivotal trials start 2025; autoimmune expansion (wAIHA/ITP) by 2026</p><p><strong>Conclusion:</strong> NX-5948 represents a differentiated BTK degrader with compelling clinical validation and strong financial positioning, creating a potential partnership opportunity as pivotal development costs escalate.</p>"
+      }
+    },
+    {
+      "step": 40,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Press Release)",
+        "Reasoning": "I have completed the comprehensive NX-5948 partnership assessment report. Now I must establish continuous monitoring systems to capture emerging clinical data, competitive landscape shifts, regulatory developments, and strategic partnership activities for real-time intelligence updates and ongoing partnership evaluation."
+      }
+    },
+    {
+      "step": 41,
+      "content": {
+        "InputFeedTitle": "<i class=\"ph ph-rss\"></i>INPUT FEED (EHA25 Webcast)",
+        "EnrichmentTitle": "<i class=\"ph ph-stack\"></i>ENRICHMENT (Press Release)",
+        "Plan": [
+          {"task_id": "001", "task": "Identify early clinical-stage BTK assets", "checked": true},
+          {"task_id": "002", "task": "Deploy real-time agents to track NX-5948 & other drugs", "checked": true},
+        ]
+      }
+    }
+  ];
+
+        // Global variables
+        let currentStep = 0;
+        let isPlaying = true;
+        let loopEnabled = true;
+        let stepTimeout = null;
+        let activeIntervals = new Map();
+        
+        const speedSlider = document.getElementById('speed-slider');
+        
+        function getStepDelay() {
+            const speed = parseInt(speedSlider.value);
+            return (11 - speed) * 400;
+        }
+
+        function getStreamSpeed() {
+            const speed = parseInt(speedSlider.value);
+            return Math.max(3, 40 - (speed * 3.5));
+        }
+
+        function streamText(element, text, callback) {
+            if (!element || typeof text === 'undefined') {
+                if (callback) callback();
+                return;
+            }
+            const originalText = String(text);
+            const elementId = element.id || 'element_' + Math.random().toString(36).substr(2, 9);
+            
+            // Highlight active panel (removes previous highlight)
+            const panelEl = element.closest('.section');
+            if (panelEl) highlightPanel(panelEl);
+
+            if (activeIntervals.has(elementId)) {
+                clearInterval(activeIntervals.get(elementId));
+            }
+
+            element.innerHTML = '';
+            let index = 0;
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            
+            const interval = setInterval(() => {
+                if (index < originalText.length && isPlaying) {
+                    element.textContent += originalText[index];
+                    index++;
+                    // keep latest content visible
+                    element.scrollTop = element.scrollHeight;
+                } else {
+                    clearInterval(interval);
+                    activeIntervals.delete(elementId);
+                    element.innerHTML = originalText;
+                    element.scrollTop = element.scrollHeight;
+                    if (callback) callback();
+                }
+            }, getStreamSpeed());
+            activeIntervals.set(elementId, interval);
+        }
+
+        function clearAllIntervals() {
+            activeIntervals.forEach(interval => clearInterval(interval));
+            activeIntervals.clear();
+        }
+
+        function clearSections(exceptIds = []) {
+             ['objective-content', 'plan-list', 'reasoning-content', 'action-list'].forEach(id => {
+                if (!exceptIds.includes(id)) {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = '';
+                }
+             });
+        }
+        
+        function updatePlanList(planItems, disableAnimation = false) {
+            const planElement = document.getElementById('plan-list');
+
+            const checkedIds = [];
+            let newItemCount = 0;
+
+            planItems.forEach(item => {
+                const lineId = 'plan_' + item.task_id;
+                let lineEl = document.getElementById(lineId);
+                const checkbox = item.checked ? 
+                    '<i class="ph ph-check-circle"></i>' : 
+                    '<i class="ph ph-circle"></i>';
+                let taskText = item.task;
+                if (taskText.includes('& others')) {
+                    taskText = taskText.replace('& others', `<span class="others">& others</span>`);
+                }
+                if (item.task_id === '002' && taskText.includes('NX-5948')) {
+                    taskText = taskText.replace('NX-5948', `<span class="asset">NX-5948</span>`);
+                }
+                const lineText = `<span class="checkmark ${item.checked ? 'checked' : ''}">${checkbox}</span> ${taskText}`;
+
+                if (!lineEl) {
+                    lineEl = document.createElement('div');
+                    lineEl.id = lineId;
+                    planElement.appendChild(lineEl);
+                    if (isPlaying && !disableAnimation) {
+                        lineEl.classList.add('slide-up');
+                        lineEl.style.animationDelay = `${newItemCount * 0.15}s`;
+                        newItemCount++;
+                        lineEl.addEventListener('animationend', () => {
+                            lineEl.classList.remove('slide-up');
+                            lineEl.style.animationDelay = '';
+                        }, { once: true });
+                    }
+                }
+
+                if (lineEl.innerHTML !== lineText) {
+                    lineEl.innerHTML = lineText;
+                }
+
+                if (item.checked) checkedIds.push(item.task_id);
+            });
+
+            // Determine latest checked task (last in list)
+            const latestCheckedId = checkedIds.length ? checkedIds[checkedIds.length - 1] : null;
+
+            // Loop through DOM children to hide/show and possibly move latest checked to top
+            Array.from(planElement.children).forEach(child => {
+                const isChecked = child.querySelector('.checkmark.checked');
+                if (isChecked) {
+                    if (child.id === 'plan_' + latestCheckedId) {
+                        // ensure visible
+                        child.classList.remove('hidden');
+                        // move to top with animation
+                        if (isPlaying) {
+                            child.classList.add('slide-up');
+                        }
+                        planElement.prepend(child);
+                        // remove animation class after it ends
+                        child.addEventListener('animationend', () => child.classList.remove('slide-up'), { once: true });
+                    } else {
+                        child.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Highlight plan panel if animations are enabled (not step 7)
+            if (!disableAnimation) highlightPanel(document.getElementById('plan'));
+        }
+
+        // Utility to highlight exactly one panel at a time
+        function highlightPanel(sectionEl) {
+            if (!sectionEl) return;
+            // clear existing highlight
+            document.querySelectorAll('.section.active-panel').forEach(sec => sec.classList.remove('active-panel'));
+            // set new highlight
+            sectionEl.classList.add('active-panel');
+        }
+
+        function processStep(stepData) {
+            return new Promise(resolve => {
+                if (!stepData || !stepData.content) {
+                    resolve();
+                    return;
+                }
+
+                // Ensure section headers reflect current step context
+                updateSectionTitles(stepData.content);
+
+                const content = stepData.content;
+                const tasks = [];
+                const disableStream = stepData.step === 7 || stepData.step === 42;
+
+                // Safely get elements and only process if they exist
+                const objectiveEl = document.getElementById('objective-content');
+                const reasoningEl = document.getElementById('reasoning-content');
+                const actionListEl = document.getElementById('action-list');
+                const inputDiv = document.getElementById('input-content');
+                const enrichDiv = document.getElementById('enrichment-content');
+
+                if (content.Objective && objectiveEl) {
+                    if (disableStream) {
+                        objectiveEl.textContent = content.Objective;
+                    } else {
+                        tasks.push(new Promise(res => streamText(objectiveEl, content.Objective, res)));
+                    }
+                }
+                if (content.Reasoning && reasoningEl) {
+                    if (disableStream) {
+                        reasoningEl.textContent = content.Reasoning;
+                    } else {
+                        tasks.push(new Promise(res => streamText(reasoningEl, content.Reasoning, res)));
+                    }
+                }
+                if (content.Plan) {
+                    updatePlanList(content.Plan, disableStream);
+                }
+
+                if ((content.Action || content.action) && actionListEl) {
+                    // Keep previous actions; they will naturally scroll up
+
+                    const newLine = document.createElement('div');
+                    newLine.classList.add('action-item','slide-up');
+                    actionListEl.appendChild(newLine);
+                    const actionText = content.Action || content.action;
+                    if (disableStream || stepData.step === 39) {
+                        // insert formatted HTML directly
+                        newLine.innerHTML = actionText;
+                        actionListEl.scrollTop = actionListEl.scrollHeight;
+                    } else {
+                        tasks.push(new Promise(res => {
+                            streamText(newLine, actionText, () => {
+                                newLine.innerHTML = newLine.textContent.replace('Email (Jun 6):', '<span class=\"asset\">Email (Jun 6):</span>');
+                                actionListEl.scrollTop = actionListEl.scrollHeight;
+                                res();
+                            });
+                        }));
+                        // No persistent highlight when streaming unless step 7 handled above
+                    }
+                }
+
+                if (content.InputFeed && inputDiv) {
+                    inputDiv.innerHTML = '';
+                    inputDiv.style.display = 'none';
+                    const url = typeof content.InputFeed === 'string' ? content.InputFeed : content.InputFeed.url;
+
+                    if (url && (/\.pdf($|[?#])/i.test(url) || /\.mp4($|[?#])/i.test(url))) {
+                        // show loader first
+                        const loader = document.createElement('div');
+                        loader.className = 'loader';
+                        inputDiv.appendChild(loader);
+                        inputDiv.style.display = 'block';
+                        const inputFeedHeader = document.getElementById('input-feed');
+                        if (inputFeedHeader && !disableStream) highlightPanel(inputFeedHeader);
+
+                        setTimeout(() => {
+                            inputDiv.innerHTML = '';
+                            if (/\.pdf($|[?#])/i.test(url)) {
+                                const iframe = document.createElement('iframe');
+                                iframe.className = 'pdf-frame';
+                                iframe.src = url;
+                                inputDiv.appendChild(iframe);
+                            } else {
+                                const video = document.createElement('video');
+                                video.className = 'video-frame';
+                                video.src = url;
+                                video.controls = true;
+                                video.autoplay = true;
+                                video.muted = true;
+                                video.playsInline = true;
+                                video.addEventListener('canplay', () => video.play());
+                                // ensure 8s visible playback for step 7
+                                if (stepData && (stepData.step === 7 || stepData.step === 42)) {
+                                    tasks.push(new Promise(res => setTimeout(res, 8000)));
+                                }
+                                // ensure video starts from beginning for step 42 loop
+                                video.addEventListener('loadedmetadata', () => { if(stepData && stepData.step === 42) video.currentTime = 0; });
+                                inputDiv.appendChild(video);
+                            }
+                        }, 1000);
+                    }
+                }
+
+                if (content.Enrichment && enrichDiv) {
+                    enrichDiv.innerHTML = '';
+                    enrichDiv.style.display = 'none';
+                    const loaderEn = document.createElement('div');
+                    loaderEn.className = 'loader';
+                    enrichDiv.appendChild(loaderEn);
+                    enrichDiv.style.display = 'block';
+                    const items = Array.isArray(content.Enrichment) ? content.Enrichment : [content.Enrichment];
+                    setTimeout(() => {
+                        enrichDiv.innerHTML = '';
+                        const enrichmentHeader = document.getElementById('enrichment');
+                        if (enrichmentHeader && !disableStream) highlightPanel(enrichmentHeader);
+
+                        items.forEach(obj => {
+                            const url = obj.url || obj;
+                            if (url && /\.pdf($|[?#])/i.test(url)) {
+                                const iframe = document.createElement('iframe');
+                                iframe.className = 'pdf-frame';
+                                let pdfUrl = url;
+                                if (!/#page=\d+/i.test(pdfUrl)) {
+                                    pdfUrl += (pdfUrl.indexOf('#') === -1 ? '#page=1' : '');
+                                }
+                                const prevScroll = window.scrollY;
+                                iframe.src = pdfUrl;
+                                enrichDiv.appendChild(iframe);
+                                setTimeout(() => window.scrollTo(0, prevScroll), 0);
+                            } else if (url && /\.mp4($|[?#])/i.test(url)) {
+                                const video = document.createElement('video');
+                                video.className = 'video-frame';
+                                video.src = url;
+                                video.controls = true;
+                                video.autoplay = true;
+                                video.muted = true;
+                                video.playsInline = true;
+                                video.addEventListener('canplay', () => video.play());
+                                enrichDiv.appendChild(video);
+                                setTimeout(() => window.scrollTo(0, prevScroll), 0);
+                            }
+                        });
+                    }, 1000);
+                }
+
+                if (tasks.length > 0) {
+                    Promise.all(tasks).then(resolve);
+                } else {
+                    resolve();
+                }
+            });
+        }
+
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            
+            if (isPlaying) {
+                playPauseBtn.innerHTML = '<i class="ph ph-pause"></i>';
+                playPauseBtn.classList.add('active');
+                playNextStep();
+            } else {
+                playPauseBtn.innerHTML = '<i class="ph ph-play"></i>';
+                playPauseBtn.classList.remove('active');
+                clearTimeout(stepTimeout);
+                clearAllIntervals();
+            }
+        }
+
+        function playNextStep() {
+            if (!isPlaying) return;
+
+            if (currentStep >= simulationSteps.length) {
+                // Reload the page to restart the sequence
+                window.location.reload();
+                return;
+            }
+
+            // Process current step then schedule next
+            processStep(simulationSteps[currentStep]).then(() => {
+                currentStep++;
+
+                if (!isPlaying) return;
+
+                let delay = getStepDelay();
+                const prevStepData = simulationSteps[currentStep - 1];
+                if (prevStepData && prevStepData.step === 7) {
+                    delay = 8000; // custom delay for step 7 video
+                }
+
+                stepTimeout = setTimeout(playNextStep, delay);
+            });
+        }
+
+        function resetSimulation() {
+            // Clear current state
+            clearTimeout(stepTimeout);
+            clearAllIntervals();
+            currentStep = 0;
+            clearSections();
+            const planList = document.getElementById('plan-list');
+            if (planList) planList.innerHTML = '';
+
+            // Reset to first step
+            processStep(simulationSteps[0]).then(() => {
+                currentStep = 1;
+                // Ensure we're playing after reset
+                isPlaying = true;
+                const playPauseBtn = document.getElementById('play-pause-btn');
+                if (playPauseBtn) {
+                    playPauseBtn.innerHTML = '<i class="ph ph-pause"></i>';
+                    playPauseBtn.classList.add('active');
+                }
+                playNextStep();
+            });
+        }
+
+        // Initialize everything after DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up event listeners
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const loopBtn = document.getElementById('loop-btn');
+
+            if (playPauseBtn) {
+                playPauseBtn.addEventListener('click', togglePlayPause);
+                playPauseBtn.classList.add('active');
+                playPauseBtn.innerHTML = '<i class="ph ph-pause"></i>';
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', resetSimulation);
+            }
+
+            if (loopBtn) {
+                loopBtn.addEventListener('click', () => {
+                    loopEnabled = !loopEnabled;
+                    loopBtn.classList.toggle('active');
+                });
+                loopBtn.classList.add('active');
+            }
+
+            // Start the animation
+            isPlaying = true;
+            currentStep = 0;
+            playNextStep();
+        });
+
+        /*----------------------------------*/
+        /* CSS injected via JS for checkbox */
+        /*----------------------------------*/
+        const style = document.createElement('style');
+        style.textContent = `
+            .checkmark { 
+                color: #94a3b8;
+                display: inline-flex;
+                align-items: center;
+                margin-right: 8px;
+            }
+            .checkmark i {
+                font-size: 16px;
+            }
+            .checkmark.checked { 
+                color: #818cf8;
+            }
+            .others { color:#94a3b8; }
+            .asset { color:#818cf8; }
+            .hidden { display:none; }
+            @keyframes slide-up { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+            .slide-up { animation: slide-up 0.4s ease-out; }
+            .video-frame {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                border: none;
+                background: #000;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Toggle visibility of settings panel
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            if (!panel) return;
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'flex';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Update section headers based on content overrides if provided
+        function updateSectionTitles(content) {
+            const defaultTitles = {
+                input: '<i class="ph ph-rss"></i>INPUT FEED',
+                enrich: '<i class="ph ph-stack"></i>ENRICHMENT'
+            };
+
+            const inputHeader = document.querySelector('#input-feed .section-title');
+            const enrichHeader = document.querySelector('#enrichment .section-title');
+
+            const titles = {
+                input: content.InputFeedTitle || defaultTitles.input,
+                enrich: content.EnrichmentTitle || defaultTitles.enrich
+            };
+
+            if (inputHeader && inputHeader.innerHTML !== titles.input) inputHeader.innerHTML = titles.input;
+            if (enrichHeader && enrichHeader.innerHTML !== titles.enrich) enrichHeader.innerHTML = titles.enrich;
+        }
+
+    </script>
+</body>
+</html>
